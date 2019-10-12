@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.armanco.differential" version="4.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.armanco.differential" version="4.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Differential</name>
     <description>
         This app is the rules for computing the derivative of a function in calculus.
@@ -11,6 +11,9 @@
     <plugin name="cordova-plugin-whitelist" spec="1" />
     <preference name="StatusBarOverlaysWebView" value="true" />
     <preference name="StatusBarBackgroundColor" value="#ffdf49" />
+    <allow-navigation href="http://arman.co.com/*"/>
+    <allow-intent href="http://arman.co.com/*"/>
+    <access origin="http://arman.co.com"/>
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -20,6 +23,9 @@
     <allow-intent href="geo:*" />
     <platform name="android">
         <allow-intent href="market:*" />
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>
     </platform>
     <plugin name="cordova-plugin-whitelist" />
     <plugin name="cordova-plugin-admob-free" />

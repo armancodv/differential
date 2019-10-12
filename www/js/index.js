@@ -41,9 +41,14 @@ class Model {
         this.page = page;
     }
 
-    async getApps() {
-        let response = await fetch(this.api + '?p=' + this.package);
-        this.apps = await response.json();
+    getApps() {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', this.api + '?p=' + this.package);
+        xhr.send();
+        xhr.onload = () => {
+            this.apps = JSON.parse(xhr.response);
+        };
+
     }
 
 
@@ -90,7 +95,7 @@ class View {
     }
 
     addMenuItemApp(item) {
-        let element = `<table class="app" cellpadding="0" cellspacing="0" ng-click="${this.openLink(item.url)}"><tr><td class="app-thumb" style="background-image: url('${item.image}')"></td><td class="app-detail"><span class="app-name">${item.name}</span><br><span class="app-price">${item.price}</span><br><span class="app-description">${item.description}</span></td></tr></table>`;
+        let element = `<table class="app" cellpadding="0" cellspacing="0" id="app${item.name}"><tr><td class="app-thumb" style="background-image: url('${item.image}')"></td><td class="app-detail"><span class="app-name">${item.name}</span><br><span class="app-price">${item.price}</span><br><span class="app-description">${item.description}</span></td></tr></table>`;
         this.apps.insertAdjacentHTML("beforeend", element);
     }
 
@@ -111,6 +116,10 @@ class View {
 
     changeSubTitle(subTitle) {
         this.subTitle.innerHTML = subTitle;
+    }
+
+    changeCategoryTitle(categoryTitle) {
+        this.categoryTitle.innerHTML = categoryTitle;
     }
 
     changeDescription(description) {
@@ -144,6 +153,7 @@ class Controller {
             this.view.changeSubTitle(this.model.subTitle);
             this.view.changeVersion(this.model.version);
             this.view.changeDescription(this.model.description);
+            this.model.getApps();
             for (let i = 0; i < this.model.categoriesTitles.length; i++) {
                 let thumb = this.model.categoriesThumbs[i];
                 let title = this.model.categoriesTitles[i];
@@ -167,7 +177,7 @@ class Controller {
             this.view.armanco.addEventListener("click", () => {
                 this.view.openLink(this.model.homepage);
             });
-    
+
         }, false);
 
     }
@@ -193,13 +203,14 @@ class Controller {
         await this.view.addMenuItem(id, thumb, title);
         document.getElementById(id).addEventListener("click", async () => {
             this.model.changeCategory(i);
+            this.view.changeCategoryTitle(title);
             await this.view.deleteChild('items');
             for (let j = 0; j < this.model.categoryTitles[i].length; j++) {
                 await this.view.addItem(`item${j}`, this.model.categoryTitles[i][j]);
-                this.view.addFormula(`item${j}`, `images\\${i+1}\\${j+1}.svg`);
-                if(this.model.categoryImages[i][j]>=2) this.view.addFormula(`item${j}`, `images\\${i+1}\\${j+1}b.svg`)
-                if(this.model.categoryImages[i][j]>=3) this.view.addFormula(`item${j}`, `images\\${i+1}\\${j+1}c.svg`)
-                if(this.model.categoryImages[i][j]>=4) this.view.addFormula(`item${j}`, `images\\${i+1}\\${j+1}d.svg`)
+                this.view.addFormula(`item${j}`, `images\\${i + 1}\\${j + 1}.svg`);
+                if (this.model.categoryImages[i][j] >= 2) this.view.addFormula(`item${j}`, `images\\${i + 1}\\${j + 1}b.svg`)
+                if (this.model.categoryImages[i][j] >= 3) this.view.addFormula(`item${j}`, `images\\${i + 1}\\${j + 1}c.svg`)
+                if (this.model.categoryImages[i][j] >= 4) this.view.addFormula(`item${j}`, `images\\${i + 1}\\${j + 1}d.svg`)
             }
             this.changePage(2);
         });
@@ -208,11 +219,13 @@ class Controller {
     async addMenuItemMute(id, thumb, title, page) {
         await this.view.addMenuItemMute(id, thumb, title);
         document.getElementById(id).addEventListener("click", async () => {
-            if(page===3) {
+            if (page === 3) {
                 await this.view.deleteChild('apps');
-                await this.model.getApps();
-                this.model.apps.forEach(element => {
-                    this.view.addMenuItemApp(element);                    
+                this.model.apps.forEach(async element => {
+                    await this.view.addMenuItemApp(element);
+                    document.getElementById(`app${element.name}`).addEventListener("click", () => {
+                        this.view.openLink(element.url);
+                    });
                 });
             }
             this.changePage(page);
